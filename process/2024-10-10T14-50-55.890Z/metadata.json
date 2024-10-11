@@ -1,0 +1,18 @@
+{
+  "client": {
+    "name": "appmap-node",
+    "version": "2.24.3",
+    "url": "https://github.com/getappmap/appmap-node"
+  },
+  "language": {
+    "name": "javascript",
+    "engine": "Node.js",
+    "version": "v20.17.0"
+  },
+  "app": "selfHeal project",
+  "recorder": {
+    "type": "process",
+    "name": "process"
+  },
+  "name": "2024-10-10T14:50:55.890Z"
+}

@@ -1,0 +1,232 @@
+{
+  "events": [
+    {
+      "event": "call",
+      "id": 1,
+      "thread_id": 0,
+      "method_id": "add",
+      "static": true,
+      "parameters": [
+        {
+          "class": "Number",
+          "value": "5",
+          "name": "a"
+        },
+        {
+          "class": "Number",
+          "value": "3",
+          "name": "b"
+        }
+      ],
+      "defined_class": "app",
+      "path": "app.js",
+      "lineno": 3
+    },
+    {
+      "event": "return",
+      "thread_id": 0,
+      "id": 2,
+      "parent_id": 1,
+      "return_value": {
+        "class": "Number",
+        "value": "8"
+      },
+      "elapsed": 0.00011809996794909239
+    },
+    {
+      "event": "call",
+      "id": 3,
+      "thread_id": 0,
+      "method_id": "subtract",
+      "static": true,
+      "parameters": [
+        {
+          "class": "Number",
+          "value": "5",
+          "name": "a"
+        },
+        {
+          "class": "Number",
+          "value": "2",
+          "name": "b"
+        }
+      ],
+      "defined_class": "app",
+      "path": "app.js",
+      "lineno": 7
+    },
+    {
+      "event": "return",
+      "thread_id": 0,
+      "id": 4,
+      "parent_id": 3,
+      "return_value": {
+        "class": "Number",
+        "value": "3"
+      },
+      "elapsed": 0.00022220006212592125
+    },
+    {
+      "event": "call",
+      "id": 5,
+      "thread_id": 0,
+      "method_id": "subtract",
+      "static": true,
+      "parameters": [
+        {
+          "class": "Number",
+          "value": "15",
+          "name": "a"
+        },
+        {
+          "class": "Number",
+          "value": "2",
+          "name": "b"
+        }
+      ],
+      "defined_class": "app",
+      "path": "app.js",
+      "lineno": 7
+    },
+    {
+      "event": "return",
+      "thread_id": 0,
+      "id": 6,
+      "parent_id": 5,
+      "return_value": {
+        "class": "Number",
+        "value": "13"
+      },
+      "elapsed": 0.000019099912606179714
+    },
+    {
+      "event": "call",
+      "id": 7,
+      "thread_id": 0,
+      "method_id": "helpFn",
+      "static": true,
+      "parameters": [
+        {
+          "class": "String",
+          "value": "'hello'",
+          "name": "msg1"
+        },
+        {
+          "class": "String",
+          "value": "'world'",
+          "name": "msg2"
+        }
+      ],
+      "defined_class": "yt",
+      "path": "ukm\\yt.js",
+      "lineno": 1
+    },
+    {
+      "event": "return",
+      "thread_id": 0,
+      "id": 8,
+      "parent_id": 7,
+      "return_value": {
+        "class": "String",
+        "value": "'hello world'"
+      },
+      "elapsed": 0.00005209993105381727
+    },
+    {
+      "event": "call",
+      "id": 9,
+      "thread_id": 0,
+      "method_id": "add",
+      "static": true,
+      "parameters": [
+        {
+          "class": "Number",
+          "value": "4",
+          "name": "a"
+        },
+        {
+          "class": "Number",
+          "value": "3",
+          "name": "b"
+        }
+      ],
+      "defined_class": "app",
+      "path": "app.js",
+      "lineno": 3
+    },
+    {
+      "event": "return",
+      "thread_id": 0,
+      "id": 10,
+      "parent_id": 9,
+      "return_value": {
+        "class": "Number",
+        "value": "7"
+      },
+      "elapsed": 0.00000800006091594696
+    }
+  ],
+  "version": "1.12",
+  "metadata": {
+    "client": {
+      "name": "appmap-node",
+      "version": "2.24.3",
+      "url": "https://github.com/getappmap/appmap-node"
+    },
+    "language": {
+      "name": "javascript",
+      "engine": "Node.js",
+      "version": "v20.17.0"
+    },
+    "app": "selfHeal project",
+    "recorder": {
+      "type": "process",
+      "name": "process"
+    },
+    "name": "2024-10-10T14:50:55.890Z"
+  },
+  "classMap": [
+    {
+      "name": "selfHeal project",
+      "type": "package",
+      "children": [
+        {
+          "name": "ukm",
+          "type": "package",
+          "children": [
+            {
+              "type": "class",
+              "name": "yt",
+              "children": [
+                {
+                  "type": "function",
+                  "name": "helpFn",
+                  "static": true,
+                  "location": "ukm\\yt.js:1"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "class",
+          "name": "app",
+          "children": [
+            {
+              "type": "function",
+              "name": "add",
+              "static": true,
+              "location": "app.js:3"
+            },
+            {
+              "type": "function",
+              "name": "subtract",
+              "static": true,
+              "location": "app.js:7"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

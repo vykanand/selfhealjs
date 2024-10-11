@@ -1,0 +1,44 @@
+[
+  {
+    "name": "selfHeal project",
+    "type": "package",
+    "children": [
+      {
+        "name": "ukm",
+        "type": "package",
+        "children": [
+          {
+            "type": "class",
+            "name": "yt",
+            "children": [
+              {
+                "type": "function",
+                "name": "helpFn",
+                "static": true,
+                "location": "ukm\\yt.js:1"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "class",
+        "name": "app",
+        "children": [
+          {
+            "type": "function",
+            "name": "add",
+            "static": true,
+            "location": "app.js:3"
+          },
+          {
+            "type": "function",
+            "name": "subtract",
+            "static": true,
+            "location": "app.js:7"
+          }
+        ]
+      }
+    ]
+  }
+]

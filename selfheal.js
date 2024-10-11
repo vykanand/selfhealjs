@@ -1,6 +1,6 @@
-const { exec } = require('child_process');
+const { exec } = require('child_process'); 
 const fs = require('fs');
-const readline = require('readline');
+const path = require('path');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const apiKeys = [
@@ -11,6 +11,7 @@ const apiKeys = [
 ];
 
 let currentKeyIndex = 0;
+let chatSession; // Variable to hold the current AI chat session
 
 const getNextApiKey = () => {
     currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
@@ -18,31 +19,79 @@ const getNextApiKey = () => {
 };
 
 async function askQuestion(question) {
-    while (apiKeys.length > 0) {
-        const apiKey = getNextApiKey();
-        console.log(`Using API key: ${apiKey}`);
+    if (chatSession) {
+        chatSession.close(); // Close the old session if it exists
+    }
 
-        try {
-            const genAI = new GoogleGenerativeAI(apiKey);
-            const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-            const chat = model.startChat();
-            console.log('Asking AI:', question);
-            const result = await chat.sendMessage(question);
+    const apiKey = getNextApiKey();
+    console.log(`Using API key: ${apiKey}`);
+    
+    try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        chatSession = model.startChat(); // Start a new chat session
+        console.log('Asking AI:', question);
+        const result = await chatSession.sendMessage(question);
 
-            if (typeof result.response.text === 'function') {
-                const responseText = await result.response.text();
-                console.log('Received response:', responseText);
-                return responseText.trim();
-            } else {
-                throw new Error('Unexpected response format.');
-            }
-        } catch (error) {
-            console.error(`Error with API key ${apiKey}:`, error.message);
+        if (typeof result.response.text === 'function') {
+            return await result.response.text();
+        } else {
+            throw new Error('Unexpected response format.');
         }
+    } catch (error) {
+        console.error(`Error with API key ${apiKey}:`, error.message);
     }
 }
 
-function runScript(scriptPath) {
+async function getAIHelp(scriptPath, errorMessage, currentCode) {
+    const question = `The following JavaScript code has an error:
+
+Here is the current code:
+\`\`\`javascript
+${currentCode}
+\`\`\`
+
+The error message is: "${errorMessage}". 
+
+Please analyze the code and suggest modifications to fix the error while providing a brief explanation of actions taken. Format your output as:
+\`\`\`actions
+[LIST OF ACTIONS]
+\`\`\`
+\`\`\`modified
+[YOUR MODIFIED CODE HERE]
+\`\`\``;
+
+    return await askQuestion(question);
+}
+
+async function fixIssues(scriptPath, errorMessage) {
+    const currentCode = fs.readFileSync(scriptPath, 'utf8');
+    const aiResponse = await getAIHelp(scriptPath, errorMessage, currentCode);
+    
+    const actionsMatch = aiResponse.match(/```actions\n([\s\S]*?)\n```/);
+    const modifiedCodeMatch = aiResponse.match(/```modified\n([\s\S]*?)\n```/);
+
+    if (actionsMatch && modifiedCodeMatch) {
+        const actions = actionsMatch[1].trim().split('\n').map(action => action.trim()).filter(Boolean);
+        const modifiedCode = modifiedCodeMatch[1].trim();
+
+        // Log the suggested actions
+        console.log('Suggested Actions:');
+        actions.forEach(action => console.log(`- ${action}`));
+
+        // Apply modifications to the relevant file(s)
+        const modifiedFilePath = path.join(__dirname, 'ukm', 'yt.js'); // Path to the file to be modified
+        fs.writeFileSync(modifiedFilePath, modifiedCode);
+        console.log(`File modified: ${modifiedFilePath}`);
+        console.log('New code:\n', modifiedCode);
+    } else {
+        console.error('Could not parse the AI response correctly.');
+        console.error('AI response was:', aiResponse);
+    }
+}
+
+
+async function runScript(scriptPath) {
     return new Promise((resolve, reject) => {
         exec(`node ${scriptPath}`, (error, stdout, stderr) => {
             if (error) {
@@ -54,86 +103,32 @@ function runScript(scriptPath) {
     });
 }
 
-async function getAIHelp(errorMessage, scriptPath, currentCode) {
-    const question = `I encountered the following error in the script located at ${scriptPath}: ${errorMessage}. 
-                     Here is the current code:
-                     \`\`\`javascript
-                     ${currentCode}
-                     \`\`\`
-                     Please suggest modifications to fix the error without altering any valid code.
-                     The output should be formatted as follows:
-                     \`\`\`modified
-                     [YOUR MODIFIED CODE HERE]
-                     \`\`\`
-                     Ensure that only the necessary changes are highlighted.`;
-
-    const aiResponse = await askQuestion(question);
-    return aiResponse;
-}
-
-async function fixIssues(scriptPath, errorMessage) {
-    // Read the current code from the file
-    const currentCode = fs.readFileSync(scriptPath, 'utf8');
-    
-    const aiResponse = await getAIHelp(errorMessage, scriptPath, currentCode);
-    
-    // Extract the modified code from the AI response
-    const modifiedCodeMatch = aiResponse.match(/```modified\n([\s\S]*?)\n```/);
-    if (modifiedCodeMatch && modifiedCodeMatch[1]) {
-        const modifiedCode = modifiedCodeMatch[1].trim();
-        console.log('Applying modifications to the file...');
-
-        // Write the modified code back to the file
-        fs.writeFileSync(scriptPath, modifiedCode, (err) => {
-            if (err) {
-                console.error('Failed to write to file:', err);
-            } else {
-                console.log('File modified successfully.');
-                console.log('New code:\n', modifiedCode);
-            }
-        });
-    } else {
-        console.error('Could not parse the modified code from AI response.');
-    }
-}
-
 async function selfHealing(scriptPath) {
-    while (true) {
+    let attemptCount = 0;
+    while (attemptCount < 3) {
         try {
-            const output = await runScript(scriptPath);
-            console.log('Program ran successfully:', output);
-            break; 
-        } catch ({ error, stdout, stderr }) {
+            await runScript(scriptPath);
+            console.log(`Project ran successfully: ${scriptPath}`);
+            return; // Exit if successful
+        } catch ({ stdout, stderr }) {
             console.error('Error running script:', stderr || stdout);
             await fixIssues(scriptPath, stderr || stdout);
-            console.log('Retrying...');
+            return; // Exit after fixing the issue once
         }
     }
 }
 
-function askForScriptName() {
-    return new Promise((resolve) => {
-        const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout,
-        });
-
-        rl.question('Please enter the path to the script you want to run: ', (answer) => {
-            rl.close();
-            resolve(answer);
-        });
-    });
-}
-
 async function main() {
-    const scriptPath = await askForScriptName();
+    const args = process.argv.slice(2);
+    const newConversation = args.includes('--new');
     
-    if (!fs.existsSync(scriptPath)) {
-        console.error('The specified script does not exist.');
-        return;
-    }
-
+    const scriptPath = path.join(__dirname, 'app.js'); // Specify the script to fix
     await selfHealing(scriptPath);
+    console.log('Self-healing process completed.');
+    
+    if (newConversation) {
+        console.log('Starting a new conversation with the AI.');
+    }
 }
 
 main();

@@ -1,0 +1,9 @@
+name: selfHeal project
+language: javascript
+appmap_dir: ./
+packages:
+  - path: .
+    exclude:
+      - node_modules
+      - .yarn
+      - .git
